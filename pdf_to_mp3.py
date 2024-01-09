@@ -1,7 +1,6 @@
 import PyPDF2
 
-pdf_dir = "abc"
-# replace abc : paste the file directory of the document you wish to convert into an mp3 file
+pdf_dir = "abc"                # replace abc : paste the file directory of the document you wish to convert into an mp3 file
 text = ''
 
 with open(pdf_dir, 'rb') as pdf_file:
