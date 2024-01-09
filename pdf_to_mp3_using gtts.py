@@ -1,6 +1,6 @@
 import PyPDF2
 
-pdf_dir = "VIDEOS/E lockheart - We were liars.pdf"
+pdf_dir = "abc"            # replace abc : paste the file directory of the document you wish to convert into an mp3 file
 
 text = ''
 
@@ -19,4 +19,4 @@ from gtts import gTTS
 
 #tts = gTTS(text)
 tts = gTTS(text, lang='en', tld = 'co.in')
-tts.save("output_gtts.mp3")
+tts.save("output_gtts.mp3")                                # here "output_gtts.mp3" will be the name of the output file. This output file will get stored and saved in the same directory location where the python code is saved and executed
