@@ -1,56 +1,66 @@
+# install required libraries before running:
+#   pip install PyPDF2==3.0.1 pyttsx3==2.90
+
+import os
 import PyPDF2
-
-pdf_dir = "abc"                # replace abc : paste the file directory of the document you wish to convert into an mp3 file
-text = ''
-
-with open(pdf_dir, 'rb') as pdf_file:
-    pdf_reader_1 = PyPDF2.PdfReader(pdf_file)
-
-
-    # for page_number in range(14,16):         # un-comment this for loop, here you can specify the page numbers/ range of page numbers you wish to convert to your audio-file
-    #     page = pdf_reader_1.pages[page_number]    
-    #     text += page.extract_text()
-
-    for page_number in range(1,pdf_reader_1.numPages):         # use this for loop if you wish to convert the whole pdf into your audio file.
-        page = pdf_reader_1.pages[page_number]
-        text += page.extract_text()
-
-
 import pyttsx3
 
-# Initialize the pyttsx engine
-engine = pyttsx3.init()
 
-voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
+# ── Get input file from user ─────────────────────────────────
+filepath = input("Enter the path to your PDF file:\n> ").strip()
 
-# Set the properties for the audio file (optional)
-engine.setProperty('rate', 150)   # Set the speaking rate (words per minute)
-engine.setProperty('volume', 0.8) # Set the volume (0 to 1)
+if not os.path.isfile(filepath):
+    print(f"❌ File not found: '{filepath}'. Check the path and try again.")
+    exit()
 
-# Convert the text to speech
-engine.save_to_file(text, 'test3.mp3')
-engine.runAndWait()
+if not filepath.lower().endswith(".pdf"):
+    print("❌ This script only accepts .pdf files.")
+    exit()
 
 
+# ── Extract text from PDF ────────────────────────────────────
+print("📖 Reading PDF file...")
+text = ""
 
-### below code runs on older PyPDF2 library, and does not support the new one
-#
-# import PyPDF2
-#
-# pdf_dir = "kaufman2013.pdf"
-#
-# text = ''
-#
-# with open(pdf_dir, 'rb') as pdf_file:
-#     pdf_reader = PyPDF2.PdfFileReader(pdf_file)
-#
-#     for page_number in range(1,pdf_reader_1.numPages):
-#         page = pdf_reader_1.getPage(page_number)
-#         text += page.extractText()
-#
-# import pyttsx3
-#
-# engine = pyttsx3.init()
-# engine.save_to_file(text, 'test1.mp3')
-# engine.runAndWait()
+try:
+    with open(filepath, "rb") as pdf_file:
+        reader = PyPDF2.PdfReader(pdf_file)
+        total_pages = len(reader.pages)          # ✅ replaces deprecated .numPages
+        print(f"  Found {total_pages} pages.")
+
+        for i, page in enumerate(reader.pages):
+            extracted = page.extract_text()
+            if extracted:
+                text += extracted + "\n"
+            else:
+                print(f"  ⚠ Page {i+1} had no extractable text (may be image-based).")
+except Exception as e:
+    print(f"❌ Could not read PDF: {e}")
+    exit()
+
+if not text.strip():
+    print("⚠ No readable text found in this PDF. Cannot generate audio.")
+    exit()
+
+print(f"  ✅ Extracted ~{len(text.split()):,} words.")
+
+
+# ── Convert text to MP3 ──────────────────────────────────────
+output_filename = os.path.splitext(os.path.basename(filepath))[0] + ".mp3"
+output_path = os.path.join(os.path.dirname(filepath), output_filename)
+
+print("🔊 Converting to audio...")
+try:
+    engine = pyttsx3.init()
+    voices = engine.getProperty("voices")
+    engine.setProperty("voice", voices[1].id)
+    engine.setProperty("rate", 150)     # speaking rate in words per minute
+    engine.setProperty("volume", 0.8)   # volume (0.0 to 1.0)
+
+    engine.save_to_file(text, output_path)
+    engine.runAndWait()
+except Exception as e:
+    print(f"❌ Audio conversion failed: {e}")
+    exit()
+
+print(f"✅ Done! Saved as: {output_path}")

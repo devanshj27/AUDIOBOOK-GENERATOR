@@ -1,52 +1,49 @@
-# install python libraries before executing the program: pyttsx3
+# install required libraries before running:
+#   pip install pyttsx3==2.90
+
+import os
 import pyttsx3
 
-engine = pyttsx3.init()
 
-# Set voice properties (optional)
-voices = engine.getProperty('voices')
-engine.setProperty('voice', voices[1].id)
-engine.setProperty('rate', 150)
+# ── Get input file from user ─────────────────────────────────
+filepath = input("Enter the path to your TXT file:\n> ").strip()
 
-# Read text file
-with open('abc.txt', encoding='utf-8') as f:            # "abc.txt" should have the same directory location where the python code is saved and executed
-    data = f.read()
+if not os.path.isfile(filepath):
+    print(f"❌ File not found: '{filepath}'. Check the path and try again.")
+    exit()
 
-# Read text file
-# with open("abc.txt", "r") as file:
-#     text = file.read()
-
-# Speak text file
-engine.say(data)
-engine.runAndWait()
+if not filepath.lower().endswith(".txt"):
+    print("❌ This script only accepts .txt files.")
+    exit()
 
 
+# ── Read text file ────────────────────────────────────────────
+print("📖 Reading TXT file...")
+try:
+    with open(filepath, encoding="utf-8") as f:
+        data = f.read()
+except Exception as e:
+    print(f"❌ Could not read file: {e}")
+    exit()
+
+if not data.strip():
+    print("⚠ The text file appears to be empty. Nothing to play.")
+    exit()
+
+print(f"  ✅ Loaded ~{len(data.split()):,} words.")
 
 
+# ── Speak the text ────────────────────────────────────────────
+print("🔊 Speaking...")
+try:
+    engine = pyttsx3.init()
+    voices = engine.getProperty("voices")
+    engine.setProperty("voice", voices[1].id)
+    engine.setProperty("rate", 150)     # speaking rate in words per minute
+    engine.say(data)
+    engine.runAndWait()
+except Exception as e:
+    print(f"❌ Could not play audio: {e}")
+    exit()
 
-
-
-
-
-# voices engine
-'''
-import pyttsx3
-engine = pyttsx3.init()
-
-with open("abc.txt","r") as file:                        # "abc.txt" should have the same directory location where the python code is saved and executed
-    text = file.read()
-    
-voices = engine.getProperty('voices')
-for voice in voices:
-    print("Voice:")
-    print(" - ID: %s" % voice.id)
-    print(" - Name: %s" % voice.name)
-    print(" - Languages: %s" % voice.languages)
-    print(" - Gender: %s" % voice.gender)
-
-# Set voice properties
-voice_id = "com.apple.speech.synthesis.voice.karen"
-engine.setProperty('voice', voice_id)
-
-engine.say(text)
-engine.runAndWait()'''
+print("✅ Done!")
